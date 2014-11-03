@@ -1,0 +1,28 @@
+<!doctype html>
+<html>
+	<head>
+		<title>Maze test page</title>
+		<script src="/jquery-1.11.0.min.js"></script>
+		<script src="/socket.io/socket.io.js"></script>
+		<script src="/main.js"></script>
+
+		<style>
+			.statBlock {
+				position: absolute;
+				right: 10px;
+				top: 10px;
+				border: 1px dotted #ccc;
+				padding: 5px;
+				display: inline-block;
+			}
+		</style>
+	</head>
+
+	<body>
+	<div class="statBlock"></div>
+	<div class="listOfGames">
+		<span></span>
+		<button class="listOfGames-create" data-players="2">Создать игру</button>
+	</div>
+	</body>
+</html>
