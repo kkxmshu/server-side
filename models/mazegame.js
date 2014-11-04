@@ -7,6 +7,8 @@ var MazeGame = function() {
     this.games = [];
     /** Array with list of all users. */
     this.users = [];
+    /** Array with list of available users. */
+    this.availableUsers = [];
 }
 
 MazeGame.prototype.addGame = function(game, userId) {
@@ -22,8 +24,14 @@ MazeGame.prototype.addGame = function(game, userId) {
 	return canCreateGame;
 };
 
-MazeGame.prototype.getListOfGames = function(game) {
-	return this.games;
+MazeGame.prototype.getListOfGames = function(userId) {
+	var result = [];
+
+	for(var i = 0; i < this.games.length; i++) {
+		result.push({playersMax: this.games[i].playersMax, playersNow: this.games[i].players.length, roomId: i});
+	}
+
+	return result;
 };
 
 module.exports = MazeGame;
