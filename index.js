@@ -38,12 +38,13 @@ io.on('connection', function (socket) {
 		if(Game.games[roomId].addPlayer(userId)) {
 			Game.availableUsers.pop(userId);
 			if(Game.games[roomId].canStart()) {
+				var result = {movePlayer: Game.games[roomId].currentMove, roomId: roomId};
+
 				for(var i = 0; i < Game.games[roomId].players.length; i++) {
-					if(Game.games[roomId].currentMove == i) {
-						io.sockets.connected[Game.games[roomId].players[i]].emit('startGame', {canMove: true, movePlayer: Game.games[roomId].currentMove, userId: i, roomId: roomId});
-					} else {
-						io.sockets.connected[Game.games[roomId].players[i]].emit('startGame', {canMove: false, movePlayer: Game.games[roomId].currentMove, userId: i, roomId: roomId});
-					}
+					result['canMove'] = (Game.games[roomId].currentMove == i)?true:false;
+					result['userId'] = i;
+					
+					io.sockets.connected[Game.games[roomId].players[i]].emit('startGame', result);
 				}
 			};
 		};
@@ -55,20 +56,19 @@ io.on('connection', function (socket) {
 		var y = data['y'];
 		var opponentId = Game.games[roomId].currentMove;
 
-		console.log(data);
-
 		if(Game.games[roomId].currentMove + 1 == Game.games[roomId].players.length) {
 			Game.games[roomId].currentMove = 0;
 		} else {
 			Game.games[roomId].currentMove++;
 		}
 
+		var result = {canMove: false, movePlayer: Game.games[roomId].currentMove, roomId: roomId, opponentMove: {id : opponentId, x: x, y: y}};
+
 		for(var i = 0; i < Game.games[roomId].players.length; i++) {
-			if(Game.games[roomId].currentMove == i) {
-				io.sockets.connected[Game.games[roomId].players[i]].emit('makeMove', {canMove: true, movePlayer: Game.games[roomId].currentMove, userId: i, roomId: roomId, opponentMove: {id : opponentId, x: x, y: y}});
-			} else {
-				io.sockets.connected[Game.games[roomId].players[i]].emit('makeMove', {canMove: false, movePlayer: Game.games[roomId].currentMove, userId: i, roomId: roomId, opponentMove: {id : opponentId, x: x, y: y}});
-			}
+			result['canMove'] = (Game.games[roomId].currentMove == i)?true:false;
+			result['userId'] = i;
+			
+			io.sockets.connected[Game.games[roomId].players[i]].emit('makeMove', result);
 		}
 	});
 
