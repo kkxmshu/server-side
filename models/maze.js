@@ -17,18 +17,18 @@ Maze.prototype.generate = function(width, height) {
 
 	for (var i = 0; i < height; i++) {
 		if (i == 0) {
-			cells[i] = initLine(width);
-			attachToSet(setsOfCells, sets);
-			addRightBorders(cells[i], setsOfCells, sets);
-			addBottomBorders(cells[i], setsOfCells, sets);
+			cells[i] = this.initLine(width);
+			this.attachToSet(setsOfCells, sets);
+			this.addRightBorders(cells[i], setsOfCells, sets);
+			this.addBottomBorders(cells[i], setsOfCells, sets);
 		} else {
-			cells[i] = cloneLine(cells[i - 1]);
-			removeBorders(cells[i], setsOfCells, sets);
-			attachToSet(setsOfCells,sets);
-			addRightBorders(cells[i], setsOfCells, sets);
-			addBottomBorders(cells[i], setsOfCells, sets);
+			cells[i] = this.cloneLine(cells[i - 1]);
+			this.removeBorders(cells[i], setsOfCells, sets);
+			this.attachToSet(setsOfCells,sets);
+			this.addRightBorders(cells[i], setsOfCells, sets);
+			this.addBottomBorders(cells[i], setsOfCells, sets);
 			if (i == height - 1) {
-				completeLastLine(cells[i], setsOfCells, sets);				
+				this.completeLastLine(cells[i], setsOfCells, sets);				
 			} 
 		}	
 	}
@@ -36,7 +36,7 @@ Maze.prototype.generate = function(width, height) {
 	return cells;
 };
 
-function initLine(cellsCount) {
+Maze.prototype.initLine = function(cellsCount) {
 	var cells = new Array(cellsCount);
 	for (var i = 0; i < cells.length; i++) {
 		cells[i] = 0;
@@ -44,7 +44,7 @@ function initLine(cellsCount) {
 	return cells;
 }
 
-function cloneLine(cellsOfLine) {
+Maze.prototype.cloneLine = function(cellsOfLine) {
 	var clone = new Array(cellsOfLine.length);
 	for (var i = 0; i < clone.length; i++) {
 		clone[i] = cellsOfLine[i];
@@ -52,7 +52,7 @@ function cloneLine(cellsOfLine) {
 	return clone;
 }
 
-function getUniqueSetNum(set) {
+Maze.prototype.getUniqueSetNum = function(set) {
 	var i = 1;
 	while(set.indexOf(i) != -1) {
 		i++;
@@ -60,18 +60,18 @@ function getUniqueSetNum(set) {
 	return i;
 }
 
-function attachToSet(setsOfCells, sets) {
+Maze.prototype.attachToSet = function(setsOfCells, sets) {
 	for (var i = 0; i < setsOfCells.length; i++) {
 		if (sets.indexOf(setsOfCells[i]) == -1) {
-			setsOfCells[i] = getUniqueSetNum(sets);
+			setsOfCells[i] = this.getUniqueSetNum(sets);
 			sets.push(setsOfCells[i]);
 		}
 	}
 }
 
-function addRightBorders(cells, setsOfCells, sets) {
+Maze.prototype.addRightBorders = function(cells, setsOfCells, sets) {
 	for (var i = 0; i < cells.length - 1; i++) {
-		if (setsOfCells[i] == setsOfCells[i + 1] || getRandomBool()) {
+		if (setsOfCells[i] == setsOfCells[i + 1] || this.getRandomBool()) {
 			cells[i] |= 2;
 		} else {
 			var setNum = setsOfCells[i];
@@ -85,7 +85,7 @@ function addRightBorders(cells, setsOfCells, sets) {
 	cells[cells.length -1] |= 2;
 }
 
-function addBottomBorders(cells, setsOfCells, sets) {
+Maze.prototype.addBottomBorders = function(cells, setsOfCells, sets) {
 	var cellsOfSet;
 	var noBottomCell;
 	for (var i = 0; i < sets.length; i++) {
@@ -96,10 +96,10 @@ function addBottomBorders(cells, setsOfCells, sets) {
 			}
 		}
 		if (cellsOfSet.length > 1) {
-			noBottomCell = getRandomInt(cellsOfSet.length);
+			noBottomCell = this.getRandomInt(cellsOfSet.length);
 			cellsOfSet.splice(noBottomCell, 1);
 			for (var j = 0; j < cellsOfSet.length; j++) {
-				if (getRandomBool()) {
+				if (this.getRandomBool()) {
 					cells[cellsOfSet[j]] |= 1;
 				}
 			}
@@ -107,7 +107,7 @@ function addBottomBorders(cells, setsOfCells, sets) {
 	}
 }
 
-function removeBorders(cells, setsOfCells, sets) {
+Maze.prototype.removeBorders = function(cells, setsOfCells, sets) {
 	var setNum;
 	var setNumId;
 	for (var i = 0; i < cells.length; i++) {
@@ -124,7 +124,7 @@ function removeBorders(cells, setsOfCells, sets) {
 	}
 }
 
-function completeLastLine(cells, setsOfCells, sets) {
+Maze.prototype.completeLastLine = function(cells, setsOfCells, sets) {
 	for (var i = 0; i < cells.length - 1; i++) {
 		cells[i] |= 1;
 		if (setsOfCells[i] != setsOfCells[i + 1]) {
@@ -135,11 +135,11 @@ function completeLastLine(cells, setsOfCells, sets) {
 	cells[cells.length - 1] |= 1;
 }
 
-function getRandomBool() {
+Maze.prototype.getRandomBool = function() {
 	return Math.random()<.5;
 }
 
-function getRandomInt(max) {
+Maze.prototype.getRandomInt = function(max) {
   return Math.floor(Math.random() * max);
 }
 
