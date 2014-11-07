@@ -11,6 +11,7 @@
   "dependencies": {
     "express": "^4.10.1",
     "socket.io": "^1.2.0",
-    "jsdoc": "^3.3.0-alpha10"
+    "jsdoc": "^3.3.0-alpha10",
+    "forever": "^0.13.0"
   }
 }
