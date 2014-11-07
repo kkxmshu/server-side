@@ -7,8 +7,7 @@ var Game = require('./models/game');
 
 app.use(express.static('public'));
 
-var countGames = onlineGames = 0, MazeGame = new MazeGame();
-
+var MazeGame = new MazeGame();
 
 io.on('connection', function (socket) {
 	var userid = socket.id.toString();
@@ -18,8 +17,7 @@ io.on('connection', function (socket) {
 
 	function updateGamesInfo() {
     	io.sockets.emit('stats', [
-			'Всего игр: ' + countGames,
-			'Сейчас игр: ' + onlineGames,
+			'Всего игр: ' + MazeGame.games.length,
 			'Свободно игроков:' + MazeGame.availableUsers.length,
 			'Сейчас игроков: ' + MazeGame.users.length
 		]);
@@ -32,7 +30,7 @@ io.on('connection', function (socket) {
     	var game = new Game(userid, data['players']);
     	if(MazeGame.addGame(game, userid)) {
     		MazeGame.availableUsers.pop(userid);
-    		onlineGames++;
+    		MazeGame.bindUserToGame(userid, game);
     	}
 	});
 
@@ -89,8 +87,16 @@ io.on('connection', function (socket) {
 	});
 
 	socket.on('disconnect', function(){
+		// Remove user from list of all users
 		MazeGame.users.pop(userid);
 		MazeGame.availableUsers.pop(userid);
+		var currentGame = MazeGame.findGameByUser(userid);
+		if(currentGame && MazeGame.games[currentGame['game']].players.length == 1) {
+			MazeGame.games[currentGame['game']] = null;
+			MazeGame.games.pop(MazeGame.games[currentGame['game']]);
+		} else if(currentGame && MazeGame.games[currentGame['game']].players.length > 1) {
+			MazeGame.games[currentGame['game']].players.pop(userid);
+		}
 	});
 });
 
