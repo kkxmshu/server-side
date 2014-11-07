@@ -28,7 +28,11 @@ MazeGame.prototype.getListOfGames = function(userId) {
 	var result = [];
 
 	for(var i = 0; i < this.games.length; i++) {
-		result.push({playersMax: this.games[i].playersMax, playersNow: this.games[i].players.length, roomId: i});
+		result.push({
+			playersMax: this.games[i].playersMax,
+			playersNow: this.games[i].players.length,
+			roomId: i
+		});
 	}
 
 	return result;
