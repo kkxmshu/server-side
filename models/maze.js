@@ -26,10 +26,11 @@ Maze.prototype.generate = function(width, height) {
 			this.removeBorders(cells[i], setsOfCells, sets);
 			this.attachToSet(setsOfCells,sets);
 			this.addRightBorders(cells[i], setsOfCells, sets);
-			this.addBottomBorders(cells[i], setsOfCells, sets);
 			if (i == height - 1) {
-				this.completeLastLine(cells[i], setsOfCells, sets);				
-			} 
+				this.completeLastLine(cells[i], setsOfCells, sets);
+			} else {
+				this.addBottomBorders(cells[i], setsOfCells, sets);
+			}
 		}	
 	}
 
@@ -70,15 +71,19 @@ Maze.prototype.attachToSet = function(setsOfCells, sets) {
 }
 
 Maze.prototype.addRightBorders = function(cells, setsOfCells, sets) {
+	var currentSet;
+	var nextSet;
+	var nextSetId;
 	for (var i = 0; i < cells.length - 1; i++) {
-		if (setsOfCells[i] == setsOfCells[i + 1] || this.getRandomBool()) {
+		currentSet = setsOfCells[i];
+		nextSet = setsOfCells[i + 1];
+		if (currentSet == nextSet || this.getRandomBool()) {
 			cells[i] |= 2;
 		} else {
-			var setNum = setsOfCells[i];
-			var setNumId = sets.indexOf(setNum);
-			setsOfCells[i + 1] = setsOfCells[i];
-			if (setNumId != -1 && setsOfCells.indexOf(setNum) == -1) {
-				sets.splice(setNumId, 1);
+			nextSetId = sets.indexOf(nextSet);
+			setsOfCells[i + 1] = currentSet;
+			if (setsOfCells.indexOf(nextSet) == -1) {
+				sets.splice(nextSetId, 1);
 			}
 		}
 	}
@@ -125,11 +130,17 @@ Maze.prototype.removeBorders = function(cells, setsOfCells, sets) {
 }
 
 Maze.prototype.completeLastLine = function(cells, setsOfCells, sets) {
+	var nextSet;
 	for (var i = 0; i < cells.length - 1; i++) {
 		cells[i] |= 1;
-		if (setsOfCells[i] != setsOfCells[i + 1]) {
+		nextSet = setsOfCells[i + 1];
+		if (setsOfCells[i] != nextSet) {
 			cells[i] &= ~2;
-			setsOfCells[i + 1] = setsOfCells[i];
+			for (var j = 0; j < setsOfCells.length; j++) {
+				if (setsOfCells[j] == nextSet) {
+					setsOfCells[j] = setsOfCells[i];
+				}
+			};
 		}
 	}
 	cells[cells.length - 1] |= 1;
@@ -140,7 +151,7 @@ Maze.prototype.getRandomBool = function() {
 }
 
 Maze.prototype.getRandomInt = function(max) {
-  return Math.floor(Math.random() * max);
+	return Math.floor(Math.random() * max);
 }
 
 module.exports = Maze;
