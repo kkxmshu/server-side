@@ -22,6 +22,7 @@ $(document).ready(function() {
 		$('.game').show();
 
 		$('.userData').find('#roomId').val(data['roomId']);
+		$('.userData').find('#moveCurrent').val(data['moveCurrent']);
 
 		makeMove(data);
 	});
@@ -32,9 +33,16 @@ $(document).ready(function() {
 		} else {
 			log('Пользователь ' + data['opponentMove']['id'] + ' походил на [' + data['opponentMove']['x'] + ';' + data['opponentMove']['y'] + ']');
 		}
-		
-		makeMove(data);
 	});
+
+	socket.on('someUserDoMove', function(data) {
+		if(data['isCorrect']) {
+			log('Пользователь ' + data['userID'] + ' походил на [' + data['moveInfo']['x'] + ';' + data['moveInfo']['y'] + ']');
+		} else {
+			log('Пользователь ' + data['userID'] + ' выбыл');
+		}
+		
+	})
 
 	$(document).on('click', '.js-connect', function(){
 		var roomId = $(this).data('id');
@@ -43,6 +51,8 @@ $(document).ready(function() {
 	})
 
 	$(document).on('submit', '.js-userData', function(){
+		$('.userData').hide();
+
 		var form = $(this).serializeArray();
 		var dataObj = {};
 		$(form).each(function(i, field){
@@ -57,14 +67,7 @@ $(document).ready(function() {
 
 function makeMove(data) {
 	$('.userData').find('#roomId').val(data['roomId']);
-
-	if(data['canMove']) {
-		$('.currentStatus').html('Ваш ход');
-		$('.userData').show();
-	} else {
-		$('.currentStatus').html('Ход игрока ' + data['movePlayer'] + '. Вы в очереди на ' + data['userId'] + ' месте');
-		$('.userData').hide();
-	}
+	$('.userData').show();
 }
 
 function log(text) {

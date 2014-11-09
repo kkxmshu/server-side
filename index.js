@@ -35,6 +35,46 @@ io.on('connection', function (socket) {
 	socket.on('connectToGame', function(data) {
 		var roomID = data['roomId'];
 		MazeGame.signToGame(userid, roomID);
+
+		var game = MazeGame.games[roomID];
+
+		if(game.isCanStart()) {
+			game.start(function(players, moveTime, moveStart, moveCurrent) {
+				for(var i = 0; i < players.length; i++) {
+					var data = {
+						roomId: roomID,
+						moveTime: moveTime,
+						moveStart: moveStart,
+						moveCurrent: moveCurrent
+					};
+					io.sockets.connected[players[i]].emit('startGame', data);
+				}
+			});
+		}
+	});
+
+	socket.on('makeMove', function(data) {
+		var game = MazeGame.findGameByUser(userid);
+
+		var data = {
+			isCorrect: true,
+			moveCurrent: data['moveCurrent'],
+			x:data['x'],
+			moveInfo: {
+				x: data['x'],
+				y: data['y']
+			}
+		};
+
+		game['game'].makeMove(userid, data, function(players, isCorrectMove) {
+			if(!isCorrectMove) {
+				data['isCorrect'] = false;
+				// Time out, need to kick user
+			}
+			for(var i = 0; i < players.length; i++) {
+				io.sockets.connected[players[i]].emit('someUserDoMove', data);
+			}
+		})
 	})
 
 	// socket.on('makeMove', function(data) {
