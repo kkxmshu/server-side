@@ -2,156 +2,151 @@
  * @module Maze
  */
 
-var Maze = function() { }
+// Bit mask of the bottom wall.
+var BOTTOM = 1;
+// Bit mask of the right wall.
+var RIGHT = 2;
+// Bit mask of the visited cell
+var VISITED = 4;
+
+var Maze = function(){
+	// Cells of the maze.
+	this.maze = [];
+}	
 
 /**
- * Generate Maze
+ * Generate Maze by Recursive Backtracking Algorithm.
  *
- * @param width the number of horizontal cells of maze
- * @param height the number of vertical cells of maze
+ * @param width the number of horizontal cells of maze.
+ * @param height the number of vertical cells of maze.
+ * @returns generated maze.
  */
 Maze.prototype.generate = function(width, height) {
-	var sets = [];
-	var setsOfCells = new Array(width);
-	var cells = new Array(height);
-
-	for (var i = 0; i < height; i++) {
-		if (i == 0) {
-			cells[i] = this.initLine(width);
-			this.attachToSet(setsOfCells, sets);
-			this.addRightBorders(cells[i], setsOfCells, sets);
-			this.addBottomBorders(cells[i], setsOfCells, sets);
-		} else {
-			cells[i] = this.cloneLine(cells[i - 1]);
-			this.removeBorders(cells[i], setsOfCells, sets);
-			this.attachToSet(setsOfCells,sets);
-			this.addRightBorders(cells[i], setsOfCells, sets);
-			if (i == height - 1) {
-				this.completeLastLine(cells[i], setsOfCells, sets);
-			} else {
-				this.addBottomBorders(cells[i], setsOfCells, sets);
-			}
-		}	
+	this.maze = new Array(height);
+	
+	for (var i = 0; i < this.maze.length; i++) {
+		this.maze[i] = new Array(width);
+		for (var j = 0; j < this.maze[i].length; j++) {
+			this.maze[i][j] = 0 | BOTTOM | RIGHT;
+		}
 	}
 
-	return cells;
+	var current = {y: getRandomInt(0, height), x: getRandomInt(0, width)};
+	var neighbours;
+	var stack = [];
+
+	do {
+		this.setVisited(current);
+
+		neighbours = this.getNeighbours(current);
+
+		if (neighbours.length != 0) {
+			stack.push(current);
+			current = neighbours[getRandomInt(0, neighbours.length)];
+			this.removeWall(current, stack[stack.length - 1]);
+			this.setVisited(current);
+		} else if (stack.length != 0) {
+			current = stack.pop();
+		} else {
+			current = getUnVisited();
+			this.setVisited(current);
+		}
+	} while (this.getUnVisited() != -1)
+
+	return this.maze;
 };
 
-Maze.prototype.initLine = function(cellsCount) {
-	var cells = new Array(cellsCount);
-	for (var i = 0; i < cells.length; i++) {
-		cells[i] = 0;
+/**
+ * Remove the wall between two neighboring cells.
+ *
+ * @param first first cell.
+ * @param second second cell.
+ */
+Maze.prototype.removeWall = function(first, second) {
+	if (first.y == second.y) {
+		this.maze[first.y][Math.min(first.x, second.x)] &= ~RIGHT;
+	} else {
+		this.maze[Math.min(first.y, second.y)][first.x] &= ~BOTTOM;
 	}
-	return cells;
-}
+};
 
-Maze.prototype.cloneLine = function(cellsOfLine) {
-	var clone = new Array(cellsOfLine.length);
-	for (var i = 0; i < clone.length; i++) {
-		clone[i] = cellsOfLine[i];
-	}
-	return clone;
-}
+/**
+ * Set cell as visited.
+ *
+ * @param cell cell which will be set as visited.
+ */
+Maze.prototype.setVisited = function(cell) {
+	this.maze[cell.y][cell.x] |= VISITED;
+};
 
-Maze.prototype.getUniqueSetNum = function(set) {
-	var i = 1;
-	while(set.indexOf(i) != -1) {
-		i++;
-	}
-	return i;
-}
-
-Maze.prototype.attachToSet = function(setsOfCells, sets) {
-	for (var i = 0; i < setsOfCells.length; i++) {
-		if (sets.indexOf(setsOfCells[i]) == -1) {
-			setsOfCells[i] = this.getUniqueSetNum(sets);
-			sets.push(setsOfCells[i]);
-		}
-	}
-}
-
-Maze.prototype.addRightBorders = function(cells, setsOfCells, sets) {
-	var currentSet;
-	var nextSet;
-	var nextSetId;
-	for (var i = 0; i < cells.length - 1; i++) {
-		currentSet = setsOfCells[i];
-		nextSet = setsOfCells[i + 1];
-		if (currentSet == nextSet || this.getRandomBool()) {
-			cells[i] |= 2;
-		} else {
-			nextSetId = sets.indexOf(nextSet);
-			setsOfCells[i + 1] = currentSet;
-			if (setsOfCells.indexOf(nextSet) == -1) {
-				sets.splice(nextSetId, 1);
+/**
+ * Search for unvisited cell.
+ *
+ * @returns first unvisited cell or -1 if there is no unvisited cells.
+ */
+Maze.prototype.getUnVisited = function() {
+	for (var i = 0; i < this.maze.length; i++) {
+		for (var j = 0; j < this.maze[i].length; j++) {
+			if (!this.isVisited(this.maze[i][j])) {
+				return {y: i ,x: j};
 			}
-		}
+		};
+	};
+	return -1;
+};
+
+/**
+ * Get unvisited neighbouring cells of the cell.
+ * 
+ * @param cell cell for which search unvisited neighbours.
+ * @returns array of unvisited neighbouring cells.
+ */
+Maze.prototype.getNeighbours = function(cell) {
+	var neighbours = [];
+
+	// Left side
+	if (cell.x > 0 && !this.isVisited(this.maze[cell.y][cell.x - 1])) {
+		neighbours.push({y: cell.y, x: cell.x - 1});
 	}
-	cells[cells.length -1] |= 2;
-}
 
-Maze.prototype.addBottomBorders = function(cells, setsOfCells, sets) {
-	var cellsOfSet;
-	var noBottomCell;
-	for (var i = 0; i < sets.length; i++) {
-		cellsOfSet = [];
-		for (var j = 0; j < setsOfCells.length; j++) {
-			if (setsOfCells[j] == sets[i]) {
-				cellsOfSet.push(j);
-			}
-		}
-		if (cellsOfSet.length > 1) {
-			noBottomCell = this.getRandomInt(cellsOfSet.length);
-			cellsOfSet.splice(noBottomCell, 1);
-			for (var j = 0; j < cellsOfSet.length; j++) {
-				if (this.getRandomBool()) {
-					cells[cellsOfSet[j]] |= 1;
-				}
-			}
-		}
+	// Right side
+	if (cell.x < this.maze[0].length -1 && !this.isVisited(this.maze[cell.y][cell.x + 1])) {
+		neighbours.push({y: cell.y, x: cell.x + 1});
 	}
-}
 
-Maze.prototype.removeBorders = function(cells, setsOfCells, sets) {
-	var setNum;
-	var setNumId;
-	for (var i = 0; i < cells.length; i++) {
-		cells[i] &= ~2;
-		if ((cells[i] & 1) != 0) {
-			setNum = setsOfCells[i];
-			setNumId = sets.indexOf(setNum);
-			setsOfCells[i] = 0;
-			if (setNumId != -1 && setsOfCells.indexOf(setNum) == -1) {
-				sets.splice(setNumId, 1);
-			}
-			cells[i] &= ~1;
-		}
+	// Up side
+	if (cell.y > 0 && !this.isVisited(this.maze[cell.y - 1][cell.x])) {
+		neighbours.push({y: cell.y - 1, x: cell.x});
 	}
-}
 
-Maze.prototype.completeLastLine = function(cells, setsOfCells, sets) {
-	var nextSet;
-	for (var i = 0; i < cells.length - 1; i++) {
-		cells[i] |= 1;
-		nextSet = setsOfCells[i + 1];
-		if (setsOfCells[i] != nextSet) {
-			cells[i] &= ~2;
-			for (var j = 0; j < setsOfCells.length; j++) {
-				if (setsOfCells[j] == nextSet) {
-					setsOfCells[j] = setsOfCells[i];
-				}
-			};
-		}
+
+	// Down side
+	if (cell.y < this.maze.length - 1 && !this.isVisited(this.maze[cell.y + 1][cell.x])) {
+		neighbours.push({y: cell.y + 1, x: cell.x});
 	}
-	cells[cells.length - 1] |= 1;
-}
 
-Maze.prototype.getRandomBool = function() {
-	return Math.random()<.5;
-}
+	return neighbours;
+};
 
-Maze.prototype.getRandomInt = function(max) {
-	return Math.floor(Math.random() * max);
+/**
+ * Check if cell is visited.
+ * 
+ * @param cell cell to check.
+ * @returns the cell is visited or not.
+ */
+Maze.prototype.isVisited = function(cell) {
+	return (cell & VISITED) != 0;
+};
+
+/**
+ * Get random integer in range [min; max).
+ * 
+ * @param min minimal value.
+ * @param max maximum value.
+ * @returns random integer.
+ */
+function getRandomInt(min, max) {
+	return Math.floor((Math.random() * max - min) + min);
 }
 
 module.exports = Maze;
