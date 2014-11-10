@@ -29,7 +29,7 @@ MazeGame.prototype.onDisconnect = function(userID) {
 	} else {
 		this.usersAvailable.splice(this.usersAvailable.indexOf(userID), 1);
 	}
-}
+};
 
 MazeGame.prototype.createGame = function(game, userID) {
 	if(this.usersAvailable.indexOf(userID) !== -1) {
@@ -47,7 +47,20 @@ MazeGame.prototype.signToGame = function(userID, gameID) {
 		this.bindUserToGame(userID, this.games[gameID]);
 		this.games[gameID].addPlayer(userID);
 	};
-}
+};
+
+MazeGame.prototype.exitFromGame = function(userID) {
+	this.usersAvailable.push(userID);
+
+	var currentGame = this.findGameByUser(userID);
+	if(currentGame !== undefined) {
+		currentGame['game'].removeUser(userID);
+		if(currentGame['game'].getCurrentPlayers() == 0) {
+			this.games.splice(this.games.indexOf(currentGame['game']), 1);
+			currentGame = undefined;
+		}
+	};
+};
 
 MazeGame.prototype.bindUserToGame = function(userID, game) {
 	this.usersInGames.push({user: userID, game: game});

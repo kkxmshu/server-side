@@ -50,65 +50,42 @@ io.on('connection', function (socket) {
 					io.sockets.connected[players[i]].emit('startGame', data);
 				}
 			});
-		}
+		} else {
+			io.sockets.connected[userid].emit('errorText', {
+				id: 1,
+				text: "Игра в комнате уже началась"
+			});
+		};
 	});
 
 	socket.on('makeMove', function(data) {
 		var game = MazeGame.findGameByUser(userid);
 
-		var data = {
+		var moveInfo = {
 			isCorrect: true,
 			moveCurrent: data['moveCurrent'],
-			x:data['x'],
 			moveInfo: {
+				userID: userid,
 				x: data['x'],
 				y: data['y']
-			}
+			},
 		};
 
-		game['game'].makeMove(userid, data, function(players, isCorrectMove) {
+		game['game'].makeMove(userid, moveInfo, function(players, isCorrectMove) {
 			if(!isCorrectMove) {
-				data['isCorrect'] = false;
-				// Time out, need to kick user
+				moveInfo['isCorrect'] = false;
+				MazeGame.exitFromGame(userid);
+				io.sockets.connected[userid].emit('errorText', {
+					id: 0,
+					text: "Время, отведённое на ход вышло"
+				});
 			}
 			for(var i = 0; i < players.length; i++) {
-				io.sockets.connected[players[i]].emit('someUserDoMove', data);
+				moveInfo['userid'] = players[i];
+				io.sockets.connected[players[i]].emit('someUserDoMove', moveInfo);
 			}
-		})
-	})
-
-	// socket.on('makeMove', function(data) {
-	// 	var roomId = parseInt(data['roomId']);
-	// 	var x = data['x'];
-	// 	var y = data['y'];
-	// 	var opponentId = MazeGame.games[roomId].currentMove;
-
-	// 	if(MazeGame.games[roomId].currentMove + 1 == MazeGame.games[roomId].players.length) {
-	// 		MazeGame.games[roomId].currentMove = 0;
-	// 	} else {
-	// 		MazeGame.games[roomId].currentMove++;
-	// 	}
-
-	// 	var result = {
-	// 		canMove: false,
-	// 		movePlayer: MazeGame.games[roomId].currentMove,
-	// 		roomId: roomId,
-	// 		opponentMove: {
-	// 			id : opponentId,
-	// 			x: x,
-	// 			y: y
-	// 		}
-	// 	};
-
-	// 	for(var i = 0; i < MazeGame.games[roomId].players.length; i++) {
-	// 		result['canMove'] = (MazeGame.games[roomId].currentMove == i)
-	// 			? true
-	// 			: false;
-	// 		result['userId'] = i;
-			
-	// 		io.sockets.connected[MazeGame.games[roomId].players[i]].emit('makeMove', result);
-	// 	}
-	// });
+		});
+	});
 
 	socket.on('disconnect', function(){
 		MazeGame.onDisconnect(userid);

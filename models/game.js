@@ -5,6 +5,7 @@ var Game = function(player, playersMax) {
 	this.moveTime = 5; // Время на ход
 	this.moveStart = 0; // Timeshtamp начала старта хода
 	this.moveCurrent = 0; // ID текущего хода
+	this.moveHistory = [];
 }
 
 Game.prototype.getCurrentPlayers = function() {
@@ -34,7 +35,7 @@ Game.prototype.removeUser = function(userID) {
 };
 
 Game.prototype.isCanStart = function() {
-	if(this.playersMax == this.players.length) {
+	if(this.playersMax == this.players.length && this.started === false) {
 		return true;
 	} else {
 		return false;
@@ -59,10 +60,24 @@ Game.prototype.newRound = function(callback) {
 
 }
 
+Game.prototype.saveToHistory = function(userID, moves, moveCurrent) {
+	this.moveHistory.push({
+		userID: userID,
+		moveID: moveCurrent,
+		coords: {
+			x: moves['moveInfo']['x'],
+			y: moves['moveInfo']['y']
+		}
+	})
+}
+
 Game.prototype.makeMove = function(userID, data, callback) {
 	var isCorrectMove = true;
-	if((Math.round(new Date().getTime() / 1000) - this.moveTime > this.moveStart) || data['moveCurrent'] !== this.moveCurrent ) {
+	if((Math.round(new Date().getTime() / 1000) - this.moveTime > this.moveStart) || parseInt(data['moveCurrent']) !== this.moveCurrent ) {
 		isCorrectMove = false;
+	};
+	if(isCorrectMove) {
+		this.saveToHistory(userID, data, this.moveCurrent);
 	}
 	callback(this.players, isCorrectMove);
 };

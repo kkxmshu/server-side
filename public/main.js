@@ -27,30 +27,34 @@ $(document).ready(function() {
 		makeMove(data);
 	});
 
-	socket.on('makeMove', function (data) {
-		if(data['userId'] == data['opponentMove']['id']) {
-			log('Вы походили на [' + data['opponentMove']['x'] + ';' + data['opponentMove']['y'] + ']');
+	socket.on('someUserDoMove', function (data) {
+		if(data['userId'] == data['moveInfo']['userID'] && data['isCorrect']) {
+			log('Вы походили на [' + data['moveInfo']['x'] + ';' + data['moveInfo']['y'] + ']');
+		} else if(data['isCorrect']) {
+			log('Пользователь ' + data['moveInfo']['userID'] + ' походил на [' + data['moveInfo']['x'] + ';' + data['moveInfo']['y'] + ']');
 		} else {
-			log('Пользователь ' + data['opponentMove']['id'] + ' походил на [' + data['opponentMove']['x'] + ';' + data['opponentMove']['y'] + ']');
+			log('Пользователь ' + data['moveInfo']['userID'] + ' не успел походить и его было выкинуто из комнаты');
 		}
 	});
 
-	socket.on('someUserDoMove', function(data) {
-		if(data['isCorrect']) {
-			log('Пользователь ' + data['userID'] + ' походил на [' + data['moveInfo']['x'] + ';' + data['moveInfo']['y'] + ']');
-		} else {
-			log('Пользователь ' + data['userID'] + ' выбыл');
-		}
-		
+	socket.on('errorText', function (data) {
+		if(data['id'] == 0) { // Время вышло
+			$('.log').html(data['text']);
+			$('.info').show();
+			$('.game').hide();
+		};
+		if(data['id'] == 1) { // В комнате уже играют
+			alert(data['text']);
+		};
 	})
 
-	$(document).on('click', '.js-connect', function(){
+	$(document).on('click', '.js-connect', function (){
 		var roomId = $(this).data('id');
 		socket.emit('connectToGame', { roomId: roomId });
 		return false;
 	})
 
-	$(document).on('submit', '.js-userData', function(){
+	$(document).on('submit', '.js-userData', function (){
 		$('.userData').hide();
 
 		var form = $(this).serializeArray();
