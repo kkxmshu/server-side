@@ -48,22 +48,37 @@ Game.prototype.start = function(callback) {
 		this.moveStart = Math.round(new Date().getTime() / 1000);
 	}
 
-	callback(this.players, this.moveTime, this.moveStart, this.moveCurrent);
-
 	var game = this;
+	game.newRound(callback);
 	var gameMoves = setInterval(function() {
-		callback(game.players, game.moveTime, game.moveStart, game.moveCurrent)
+		game.newRound(callback);
 	}, this.moveTime*1000);
 };
 
 Game.prototype.newRound = function(callback) {
+	console.log("New round");
+	this.moveCurrent++;
+	callback(this.players, this.moveTime, this.moveStart, this.moveCurrent);
+};
 
+Game.prototype.isUserInGame = function(userID, roundID){
+	// if(this.findUserMove(userID, roundID).length > 0) {
+		
+	// }
+}
+
+Game.prototype.findUserMove = function(userID, roundID) {
+	return this.moveHistory.filter(function(obj) {
+		if(obj.userID == userID && obj.roundID == roundID) {
+			return obj
+		}
+	})[0]
 }
 
 Game.prototype.saveToHistory = function(userID, moves, moveCurrent) {
 	this.moveHistory.push({
 		userID: userID,
-		moveID: moveCurrent,
+		roundID: moveCurrent,
 		coords: {
 			x: moves['moveInfo']['x'],
 			y: moves['moveInfo']['y']

@@ -24,6 +24,8 @@ $(document).ready(function() {
 		$('.userData').find('#roomId').val(data['roomId']);
 		$('.userData').find('#moveCurrent').val(data['moveCurrent']);
 
+		$('.userInfo').html('Текущий раунд — ' + data['moveCurrent']);
+
 		makeMove(data);
 	});
 
