@@ -58,8 +58,10 @@ MazeGame.prototype.exitFromGame = function(userID) {
 		if(currentGame['game'].getCurrentPlayers() == 0) {
 			this.games.splice(this.games.indexOf(currentGame['game']), 1);
 			currentGame = undefined;
-		}
+		};
 	};
+
+
 };
 
 MazeGame.prototype.bindUserToGame = function(userID, game) {

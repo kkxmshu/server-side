@@ -34,6 +34,8 @@ $(document).ready(function() {
 			log('Вы походили на [' + data['moveInfo']['x'] + ';' + data['moveInfo']['y'] + ']');
 		} else if(data['isCorrect']) {
 			log('Пользователь ' + data['moveInfo']['userID'] + ' походил на [' + data['moveInfo']['x'] + ';' + data['moveInfo']['y'] + ']');
+		} else if(data['isWinner']) {
+			log('Никого не осталось в комнате. Вы победили.');
 		} else {
 			log('Пользователь ' + data['moveInfo']['userID'] + ' не успел походить и его было выкинуто из комнаты');
 		}

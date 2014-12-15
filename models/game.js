@@ -56,9 +56,11 @@ Game.prototype.start = function(callback) {
 };
 
 Game.prototype.newRound = function(callback) {
-	console.log("New round");
-	this.moveCurrent++;
-	callback(this.players, this.moveTime, this.moveStart, this.moveCurrent);
+	if(this.getCurrentPlayers() > 1) {
+		console.log("New round");
+		this.moveCurrent++;
+		callback(this.players, this.moveTime, this.moveStart, this.moveCurrent);
+	};
 };
 
 Game.prototype.isUserInGame = function(userID, roundID){

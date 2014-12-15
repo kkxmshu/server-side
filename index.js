@@ -79,11 +79,17 @@ io.on('connection', function (socket) {
 					id: 0,
 					text: "Время, отведённое на ход вышло"
 				});
+			};
+			if(players.length == 1) {
+				moveInfo['isWinner'] = true;
+				io.sockets.connected[players[0]].emit('someUserDoMove', moveInfo);
+			} else {
+				for(var i = 0; i < players.length; i++) {
+					moveInfo['userid'] = players[i];
+					io.sockets.connected[players[i]].emit('someUserDoMove', moveInfo);
+				}
 			}
-			for(var i = 0; i < players.length; i++) {
-				moveInfo['userid'] = players[i];
-				io.sockets.connected[players[i]].emit('someUserDoMove', moveInfo);
-			}
+			
 		});
 	});
 
