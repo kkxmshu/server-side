@@ -152,7 +152,7 @@ function getRandomInt(min, max) {
 }
 
 Maze.prototype.getWalls = function(y, x) {
-	var walls = {left:0, rigth:0, top:0, bottom:0};
+	var walls = {left:0, right:0, top:0, bottom:0};
 	walls.left = getCells(this.maze, y, x, LEFT);
 	walls.right = getCells(this.maze, y, x, RIGHT);
 	walls.top = getCells(this.maze, y, x, TOP);
