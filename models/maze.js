@@ -8,6 +8,8 @@ var BOTTOM = 1;
 var RIGHT = 2;
 // Bit mask of the visited cell
 var VISITED = 4;
+var LEFT = 3;
+var TOP = 0;
 
 var Maze = function(){
 	// Cells of the maze.
@@ -53,7 +55,7 @@ Maze.prototype.generate = function(width, height) {
 		}
 	} while (this.getUnVisited() != -1)
 
-	return this.maze;
+	return this;
 };
 
 /**
@@ -147,6 +149,73 @@ Maze.prototype.isVisited = function(cell) {
  */
 function getRandomInt(min, max) {
 	return Math.floor((Math.random() * max - min) + min);
+}
+
+Maze.prototype.getWalls = function(y, x) {
+	var walls = {left:0, rigth:0, top:0, bottom:0};
+	walls.left = getCells(this.maze, y, x, LEFT);
+	walls.right = getCells(this.maze, y, x, RIGHT);
+	walls.top = getCells(this.maze, y, x, TOP);
+	walls.bottom = getCells(this.maze, y, x, BOTTOM);
+	if (y == this.maze.length - 1 && x == this.maze[y].length -1) {
+		walls.right = -1;
+	}
+	return walls;
+}
+
+function getCells(maze, y, x, dir) {
+	var cells = 0;
+	var cell;
+	switch (dir) {
+		case LEFT://left side
+			while (x > 0) {
+				x--;
+				cell = maze[y][x];
+				if ((cell & RIGHT) != 0) {
+					break;
+				} else {
+					cells++;
+				}
+			}
+		break;
+		case RIGHT://right side
+			while (x < maze[y].length - 1) {
+				cell = maze[y][x];
+				if ((cell & RIGHT) != 0) {
+					break;
+				} else {
+					cells++;
+				}
+				x++;
+			}
+		break;
+		case TOP://top side
+			while (y > 0) {
+				y--;
+				cell = maze[y][x];
+				if ((cell & BOTTOM) != 0) {
+					break;
+				} else {
+					cells++;
+				}
+			}
+		break;
+		case BOTTOM://bottom side
+			while (y < maze[x].length - 1) {
+				cell = maze[y][x];
+				if ((cell & BOTTOM) != 0) {
+					break;
+				} else {
+					cells++;
+				}
+				y++;
+			}
+		break;
+	}
+	if (cells > 3) {
+		cells = 3;
+	}
+	return cells;
 }
 
 module.exports = Maze;
