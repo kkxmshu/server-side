@@ -26,7 +26,7 @@ $(document).ready(function() {
 
 		$('.userInfo').html('Текущий раунд — ' + data['moveCurrent']);
 
-		makeMove(data);
+		makeMove(data);		
 	});
 
 	socket.on('someUserDoMove', function (data) {
