@@ -56,7 +56,36 @@ $(document).ready(function() {
 		var roomId = $(this).data('id');
 		socket.emit('connectToGame', { roomId: roomId });
 		return false;
-	})
+	});
+
+	$(document).on('click', '.js-controls', function (){
+
+		var type = $(this).data('type');
+		var x = parseInt($('.js-userData #x').val());
+		var y = parseInt($('.js-userData #y').val());
+
+		if(type == 'top') {
+			x -= 1;
+		} else if (type == 'bottom') {
+			x += 1;
+		} else if (type=="left") {
+			y -= 1;
+		} else {
+			y += 1;
+		};
+
+		if(y < 0 || x < 0) {
+			alert("Нельзя так ходить");
+			return false;
+		}
+
+		$('.js-userData #x').val(x);
+		$('.js-userData #y').val(y);
+		$('.js-userData').submit();
+		return false;
+	});
+
+	
 
 	$(document).on('submit', '.js-userData', function (){
 		$('.userData').hide();
@@ -68,7 +97,7 @@ $(document).ready(function() {
 		});
 		socket.emit('makeMove', dataObj);
 		return false;
-	})
+	});
 
 	
 });

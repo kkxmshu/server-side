@@ -31,9 +31,14 @@
 
 	<div class="game" style="display: none;">
 		<form class="userData js-userData">
+
+			<div class="controls" style="line-height: 0px;">
+				<div class="js-controls" data-type="top" style="width:100px; height: 20px; line-height: 20px; background: red;"></div><span class="js-controls" data-type="left" style="display: inline-block; width:50px; line-height: 20px; height: 20px; background: green;"></span><span class="js-controls" data-type="right" style="display: inline-block; width:50px; line-height: 20px; height: 20px; background: #ccc;"></span><br><span class="js-controls" data-type="bottom" style="width:100px; height: 20px; line-height: 20px; background: #333; display: inline-block;"></span>
+			</div>
+
 			<span class="userInfo"></span>
-			<input placeholder="x" name="x" type="text">
-			<input placeholder="y" name="y" type="text">
+			<input placeholder="x" value="0" name="x" id="x" type="text">
+			<input placeholder="y" value="0" name="y" id="y" type="text">
 			<input type="hidden" name="roomId" id="roomId">
 			<input type="hidden" value="1" name="moveCurrent" id="moveCurrent">
 			<button>Send</button>
