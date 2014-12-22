@@ -6,10 +6,12 @@
 var BOTTOM = 1;
 // Bit mask of the right wall.
 var RIGHT = 2;
+// Bit mask of the top wall.
+var TOP = 4;
+// Bit mask of the left wall.
+var LEFT = 8;
 // Bit mask of the visited cell
-var VISITED = 4;
-var LEFT = 3;
-var TOP = 0;
+var VISITED = 16;
 
 var Maze = function(){
 	// Cells of the maze.
@@ -151,71 +153,105 @@ function getRandomInt(min, max) {
 	return Math.floor((Math.random() * max - min) + min);
 }
 
-Maze.prototype.getWalls = function(y, x) {
-	var walls = {left:0, right:0, top:0, bottom:0};
-	walls.left = getCells(this.maze, y, x, LEFT);
-	walls.right = getCells(this.maze, y, x, RIGHT);
-	walls.top = getCells(this.maze, y, x, TOP);
-	walls.bottom = getCells(this.maze, y, x, BOTTOM);
-	if (y == this.maze.length - 1 && x == this.maze[y].length -1) {
-		walls.right = -1;
-	}
-	return walls;
-}
-
-function getCells(maze, y, x, dir) {
-	var cells = 0;
-	var cell;
-	switch (dir) {
-		case LEFT://left side
-			while (x > 0) {
-				x--;
-				cell = maze[y][x];
-				if ((cell & RIGHT) != 0) {
-					break;
-				} else {
-					cells++;
-				}
-			}
-		break;
-		case RIGHT://right side
-			while (x < maze[y].length - 1) {
-				cell = maze[y][x];
-				if ((cell & RIGHT) != 0) {
-					break;
-				} else {
-					cells++;
-				}
-				x++;
-			}
-		break;
-		case TOP://top side
-			while (y > 0) {
-				y--;
-				cell = maze[y][x];
-				if ((cell & BOTTOM) != 0) {
-					break;
-				} else {
-					cells++;
-				}
-			}
-		break;
-		case BOTTOM://bottom side
-			while (y < maze[x].length - 1) {
-				cell = maze[y][x];
-				if ((cell & BOTTOM) != 0) {
-					break;
-				} else {
-					cells++;
-				}
-				y++;
-			}
-		break;
-	}
-	if (cells > 3) {
-		cells = 3;
+/**
+ * Get neighbour cells of the current cell in position (y,x) in 4 directions.
+ * 
+ * @param y number of row of the current cell in maze array.
+ * @param x number of column of the current cell in maze array.
+ * @returns neighbour cells.
+ */
+Maze.prototype.getNeighbourCells = function(y, x) {
+	var cells = {};
+	cells.left = this.getNeighbourCell(y, x, LEFT);
+	cells.right = this.getNeighbourCell(y, x, RIGHT);
+	cells.top = this.getNeighbourCell(y, x, TOP);
+	cells.bottom = this.getNeighbourCell(y, x, BOTTOM);
+	if (y == this.maze.length - 1 && x == this.maze[y].length - 1) {
+		//exit from the maze
+		cells.right = -1;
 	}
 	return cells;
+}
+
+/**
+ * Get neighbour cell of the current cell in position (y,x) for specified direction.
+ * 
+ * @param y number of row of the current cell in maze array.
+ * @param x number of column of the current cell in maze array.
+ * @param dir direction of the neighbour.
+ * @returns neighbour cell (walls bitmask).
+ */
+Maze.prototype.getNeighbourCell = function(y, x, dir) {
+	var cell;
+
+	switch (dir) {
+		case LEFT:
+			if (x > 0) {
+				x--;
+				cell = this.maze[y][x];
+				if ((cell & RIGHT) == 0) {
+					if ((x - 1 >= 0 && (this.maze[y][x - 1] & RIGHT) != 0) || x == 0) {
+						cell |= LEFT;
+					}
+					if ((y - 1 >= 0 && (this.maze[y - 1][x] & BOTTOM) != 0) || y == 0) {
+						cell |= TOP;
+					}
+				} else {
+					return RIGHT;
+				}
+			} else {
+				return RIGHT;
+			}
+		break;
+		case RIGHT:
+			if (x < this.maze[y].length - 1) {
+				if ((this.maze[y][x] & RIGHT) != 0) {
+					return LEFT;
+				}
+				x++;
+				cell = this.maze[y][x];
+				if ((y - 1 >= 0 && (this.maze[y - 1][x] & BOTTOM) != 0) || y == 0) {
+					cell |= TOP;
+				}
+			} else {
+				return LEFT;
+			}
+		break;
+		case TOP:
+			if (y > 0) {
+				y--;
+				cell = this.maze[y][x];
+				if ((cell & BOTTOM) == 0) {
+					if ((x - 1 >= 0 && (this.maze[y][x - 1] & RIGHT) != 0) || x == 0) {
+						cell |= LEFT;
+					}
+					if ((y - 1 >= 0 && (this.maze[y - 1][x] & BOTTOM) != 0) || y == 0) {
+						cell |= TOP;
+					}
+				} else {
+					return BOTTOM;
+				}
+			} else {
+				return BOTTOM
+			}
+		break;
+		case BOTTOM:
+			if (y < this.maze.length -1) {
+				if ((this.maze[y][x] & BOTTOM) != 0) {
+					return TOP;
+				}
+				y++;
+				cell = this.maze[y][x];
+				if ((x - 1 >= 0 && (this.maze[y][x - 1] & RIGHT) != 0) || x == 0) {
+					cell |= LEFT;
+				}
+			} else {
+				return TOP;
+			}
+		break;
+	}
+
+	return cell;
 }
 
 module.exports = Maze;
