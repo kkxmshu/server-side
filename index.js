@@ -20,7 +20,7 @@ io.on('connection', function (socket) {
 			'Свободно игроков:' + MazeGame.usersAvailable.length,
 			'Сейчас игроков: ' + MazeGame.users.length
 		]);
-		io.sockets.emit('listOfGames', MazeGame.getListOfGames(userid));
+		io.sockets.emit('listOfGames', MazeGame.getListOfGames());
 	}
 
 	setInterval(updateGamesInfo, 1000);
