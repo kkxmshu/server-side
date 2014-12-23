@@ -24,6 +24,9 @@ function initGame() {
 
 	cell_h = (h-line*3) / 3;
 	cell_w = (w-line*3) / 3;
+
+	player.img = loadSprite('img/player.png')
+	maze.bag = loadSprite('img/bag.png')
 }
 
 /**
@@ -33,8 +36,9 @@ function initGame() {
  */
 function renderScene(delta) {
 	ctx.clearRect(0, 0, canvas.width, canvas.height);
-	ctx.fillRect((w / 2)-32, (h / 2)-32, 64, 64);
+	// ctx.fillRect((w / 2)-32, (h / 2)-32, 64, 64);
 	maze.draw();
+	player.draw();
 
 }
 /**
@@ -79,6 +83,7 @@ var maze = {
 	ways: {
 		left: 2, right: 5, top: 1, bottom: 9
 	},
+	bag: null,
 	/**
 	 * Refresh cells values
 	 */
@@ -143,38 +148,37 @@ var BOTTOM = 1, RIGHT = 2, TOP = 4, LEFT = 8;
  * @param cell
  */
 function drawCell(sx, sy, cell) {
-	if((cell & BOTTOM) != 0) {
-		wall(sx, sy + cell_h, sx + cell_w, sy + cell_h, lineColor, false);
+	if(cell == -1) {
+		drawSprite(maze.bag, sx, sy, 0, 0, 128, 0, 1);
 	} else {
-		// bottom blur
-	}
 
-	if((cell & RIGHT) != 0) {
-		wall(sx + cell_w, sy, sx + cell_w, sy + cell_h, lineColor, true);
-	} else {
-		// right blur
-	}
+		if((cell & BOTTOM) != 0) {
+			wall(sx, sy + cell_h, sx + cell_w, sy + cell_h, lineColor, false);
+		}
+		if((cell & RIGHT) != 0) {
+			wall(sx + cell_w, sy, sx + cell_w, sy + cell_h, lineColor, true);
+		}
+		if((cell & TOP) != 0) {
+			wall(sx, sy, sx + cell_w, sy, lineColor, false);
+		}
+		if((cell & LEFT) != 0) {
+			wall(sx, sy, sx, sy + cell_h, lineColor, true);
+		}
 
-	if((cell & TOP) != 0) {
-		wall(sx, sy, sx + cell_w, sy, lineColor, false);
-	} else {
-		// top blur
-	}
-
-	if((cell & LEFT) != 0) {
-		wall(sx, sy, sx, sy + cell_h, lineColor, true);
-	} else {
-		// left blur
 	}
 }
 
+var DIR_LEFT = 0, DIR_BOTTOM = 96, DIR_TOP = 192, DIR_RIGHT = 288;
 // Player object
 var player = {
 	direction: DOWN,
 	scale: 10,
 	coords: {x: 0, y: 0},
 	update: function() {	},
-	draw: function() {	},
+	direct: DIR_RIGHT,
+	draw: function() {
+		drawSprite(this.img, (w / 2)-64, (h / 2)-64, this.direct, 0, 96, 0, 1)
+	},
 	changeCoords: function(direction) {
 		console.log(maze.ways);
 	},
@@ -190,12 +194,14 @@ var player = {
 			case UP:
 				if((maze.ways.top & BOTTOM) == 0) {
 					this.coords.y -= 1;
+					this.direct = DIR_TOP;
 					return true;
 				}
 				break;
 			case DOWN:
 				if((maze.ways.bottom & TOP) == 0) {
 					this.coords.y += 1;
+					this.direct = DIR_BOTTOM;
 					return true;
 				}
 				break;
@@ -206,12 +212,14 @@ var player = {
 				}
 				if((maze.ways.right & LEFT) == 0 ) {
 					this.coords.x += 1;
+					this.direct = DIR_RIGHT;
 					return true;
 				}
 				break;
 			case LEFT:
 				if((maze.ways.left & RIGHT) == 0) {
 					this.coords.x -= 1;
+					this.direct = DIR_LEFT;
 					return true;
 				}
 				break;

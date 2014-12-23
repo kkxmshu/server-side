@@ -29,6 +29,7 @@ var Game = function(player, playersMax) {
 	this.maze.generate(this.mazeSize, this.mazeSize);
 	this.renderer = new MazeRenderer();
 	this.renderer.render(this.maze.maze);
+	console.log(this.maze.maze);
 }
 
 /**

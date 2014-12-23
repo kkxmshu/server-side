@@ -61,6 +61,8 @@ Maze.prototype.generate = function(width, height) {
 		}
 	} while (this.getUnVisited() != -1)
 
+	this.maze[height - 1][width - 1] &= ~RIGHT;
+
 	return this;
 };
 
