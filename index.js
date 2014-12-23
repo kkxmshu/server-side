@@ -87,6 +87,7 @@ io.on('connection', function (socket) {
 					moveInfo['winnerID'] = userid;
 				}
 				if(players.length == 1) {
+					isEnd = true;
 					moveInfo['isWinner'] = true;
 					moveInfo['userId'] = userid;
 					io.sockets.connected[players[0]].emit('someUserDoMove', moveInfo);
@@ -94,6 +95,11 @@ io.on('connection', function (socket) {
 					for(var i = 0; i < players.length; i++) {
 						moveInfo['userId'] = players[i];
 						io.sockets.connected[players[i]].emit('someUserDoMove', moveInfo);
+					}
+					for(var i = 0; i < players.length; i++) {
+						if(isEnd) {
+							MazeGame.exitFromGame(players[i]);
+						};
 					}
 				}
 			}
