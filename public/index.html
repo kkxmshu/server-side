@@ -1,7 +1,7 @@
 <!doctype html>
 <html>
 	<head>
-		<title>Test</title>
+		<title>Бумажные гонки</title>
 		<script src="/socket.io/socket.io.js"></script>
 		<script src="/test/jquery-1.11.0.min.js"></script>
 
@@ -12,25 +12,37 @@
 			#maze {
 				position: absolute;
 				margin: auto;
-				top: 0;
-				bottom: 0;
-				left: 0;
-				right: 0;
+				width: 600px;
+				height: 480px;
+				top: 50%;
+				left: 50%;
+				margin-left: -300px;
+				margin-top: -240px;
 			}
 			body {
 				background-image: url('img/bg.png');
 			}
+
+			.logo {
+				display: block;
+				margin: 0 auto;
+				width: 400px;
+				height: 200px;
+				background: url('img/title.png');
+			}
 		</style>
 	</head>
-	<body onload="init(0)">
-	<center><h1>Test maze</h1></center>
+	<body onload="init(10)">
+	<div class="logo"></div>
 	<canvas id="maze" width="600" height="480" class="game" style="display: none;"></canvas>
 
 	<div class="info">
 		<div class="statBlock"></div>
 		<div class="listOfGames">
 			<span></span>
-			<button class="listOfGames-create" data-players="2">Создать игру</button>
+			<input type="text" id="createPlayersNum" value="3" placeholder="Количество игроков">
+			<input type="text" id="createRoomSize" value="10" placeholder="Размер комнаты">
+			<button class="listOfGames-create" data-players="3">Создать игру</button>
 		</div>
 	</div>
 

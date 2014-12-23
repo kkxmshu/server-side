@@ -113,14 +113,18 @@ MazeGame.prototype.bindUserToGame = function(userID, game) {
  *
  * @returns object with list of all games
  */
-MazeGame.prototype.getListOfGames = function() {
+MazeGame.prototype.getListOfGames = function(userID) {
 	var result = [];
 
 	this.games.forEach(function(element, index, array) {
 		result.push({
+			creatorID: element.creator,
+			userID: userID,
+			playersList: element.players,
 			playersMax: element['playersMax'],
 			playersNow: element.getCurrentPlayers(),
-			roomId: index
+			roomId: index,
+			roomSize: element.mazeSize
 		});
 	});
 

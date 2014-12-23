@@ -249,7 +249,13 @@ $(document).ready(function() {
 	socket.on('listOfGames', function (data) {
 		$(".listOfGames span").empty();
 		for(var i = 0; i<data.length; i++) {
-			$(".listOfGames span").append("Игра на " + data[i]['playersMax'] + " игрока (уже " + data[i]['playersNow'] + " из " + data[i]['playersMax'] + ") <a href='' class='js-connect' data-id='" + data[i]['roomId'] + "'>Подключиться</a><br>");
+			console.log(data[i]);
+			var joinLink = (data[i]['creatorID'] != data[i]['userID'])?"<a href='' class='js-connect' data-id='" + data[i]['roomId'] + "'>Подключиться</a>":'';
+				if(data[i].playersList.indexOf(data[i]['userID']) > -1 && data[i]['creatorID'] != data[i]['userID'] ) {
+					joinLink = '';
+				}
+			var forceStart = ((data[i]['creatorID'] == data[i]['userID']) && data[i]['playersNow'] > 1)?"<a href='' class='js-forceStart' data-id='" + data[i]['roomId'] + "'>Начать сейчас!</a>":'';
+			$(".listOfGames span").append("Игра на " + data[i]['playersMax'] + " игрока (уже " + data[i]['playersNow'] + " из " + data[i]['playersMax'] + ", размер " + data[i]['roomSize'] + "×" + data[i]['roomSize'] + ") " + joinLink + forceStart + "<br>");
 		}
 	});
 
@@ -258,8 +264,9 @@ $(document).ready(function() {
 	})
 
 	$('.listOfGames-create').on('click', function() {
-		var players = $(this).data('players');
-		socket.emit('createGame', { players: players });
+		var players = parseInt($("#createPlayersNum").val());
+		var roomSize = parseInt($("#createRoomSize").val());
+		socket.emit('createGame', { players: players, roomSize: roomSize });
 	});
 
 	$(document).keydown(function (e) {
@@ -328,6 +335,14 @@ $(document).ready(function() {
 		return false;
 	});
 
+	$(document).on('click', '.js-forceStart', function (){
+		var roomId = $(this).data('id');
+		socket.emit('connectToGame', { roomId: roomId, action: 'forceStart' });
+		return false;
+	});
+
+	
+
 	$(document).on('submit', '.js-userData', function (){
 		// $('.userData').hide();
 
@@ -348,7 +363,7 @@ $(document).ready(function() {
 	// moveTimeAll = 0;
 
 	socket.on('startGame', function (data) {
-		$('.info').hide();
+		$('.info, .logo').hide();
 		$('.game').show();
 
 		$('.userData').find('#roomId').val(data['roomId']);

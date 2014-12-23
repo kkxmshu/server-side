@@ -20,15 +20,17 @@ io.on('connection', function (socket) {
 			'Свободно игроков:' + MazeGame.usersAvailable.length,
 			'Сейчас игроков: ' + MazeGame.users.length
 		]);
-		io.sockets.emit('listOfGames', MazeGame.getListOfGames());
+
+		for(var i = 0; i<MazeGame.users.length; i++) {
+			io.sockets.connected[MazeGame.users[i]].emit('listOfGames', MazeGame.getListOfGames(MazeGame.users[i]));
+		};
 	}
 
 	setInterval(updateGamesInfo, 1000);
 
 	socket.on('createGame', function (data) {
-		var game = new Game(userid, data['players']);
+		var game = new Game(userid, data['players'], data['roomSize']);
 		if(MazeGame.createGame(game, userid)) {
-			// ALL OK;
 		};
 	});
 
@@ -37,6 +39,10 @@ io.on('connection', function (socket) {
 		MazeGame.signToGame(userid, roomID);
 
 		var game = MazeGame.games[roomID];
+
+		if(data['action'] == 'forceStart') {
+			game.playersMax = game.players.length;
+		}
 
 		if(game.isCanStart()) {
 			game.start(function(players, moveTime, moveStart, moveCurrent) {
@@ -51,10 +57,13 @@ io.on('connection', function (socket) {
 				}
 			});
 		} else {
-			io.sockets.connected[userid].emit('errorText', {
-				id: 1,
-				text: "Игра в комнате уже началась"
-			});
+			if(game.started) {
+				io.sockets.connected[userid].emit('errorText', {
+					id: 1,
+					text: "Игра в комнате уже началась"
+				});
+			}
+			
 		};
 	});
 

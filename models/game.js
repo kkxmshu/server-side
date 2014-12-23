@@ -1,9 +1,12 @@
 var Maze = require('./maze');
 var MazeRenderer = require('./maze-renderer');
 
-var Game = function(player, playersMax) {
+var Game = function(player, playersMax, roomSize) {
 	// Maximum of playes
 	this.playersMax = playersMax;
+
+	// Creator ID
+	this.creator = player;
 
 	// Objects IDs of players
 	this.players = [player];
@@ -23,7 +26,7 @@ var Game = function(player, playersMax) {
 	// Objects with history of all moves
 	this.moveHistory = [];
 
-	this.mazeSize = 5;
+	this.mazeSize = roomSize;
 
 	this.maze = new Maze();
 	this.maze.generate(this.mazeSize, this.mazeSize);
