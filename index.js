@@ -71,7 +71,7 @@ io.on('connection', function (socket) {
 			},
 		};
 
-		game['game'].makeMove(userid, moveInfo, function(players, isCorrectMove, cells) {
+		game['game'].makeMove(userid, moveInfo, function(players, isCorrectMove, cells, isEnd) {
 			if(!isCorrectMove) {
 				moveInfo['isCorrect'] = false;
 				MazeGame.exitFromGame(userid);
@@ -80,9 +80,12 @@ io.on('connection', function (socket) {
 					text: "Время, отведённое на ход вышло"
 				});
 			} else {
-
 				moveInfo['cells'] = JSON.stringify(cells);
-				console.log(players.length);
+				if(isEnd) {
+					console.log("game end");
+					moveInfo['isWinner'] = true;
+					moveInfo['winnerID'] = userid;
+				}
 				if(players.length == 1) {
 					moveInfo['isWinner'] = true;
 					moveInfo['userId'] = userid;

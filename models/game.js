@@ -1,4 +1,5 @@
 var Maze = require('./maze');
+var MazeRenderer = require('./maze-renderer');
 
 var Game = function(player, playersMax) {
 	// Maximum of playes
@@ -11,7 +12,7 @@ var Game = function(player, playersMax) {
 	this.started = false;
 
 	// Time (in sec) for one round
-	this.moveTime = 3;
+	this.moveTime = 10;
 
 	// Timeshtamp of start current round
 	this.moveStart = 0;
@@ -22,8 +23,12 @@ var Game = function(player, playersMax) {
 	// Objects with history of all moves
 	this.moveHistory = [];
 
+	this.mazeSize = 5;
+
 	this.maze = new Maze();
-	this.maze.generate(20, 20);
+	this.maze.generate(this.mazeSize, this.mazeSize);
+	this.renderer = new MazeRenderer();
+	this.renderer.render(this.maze.maze);
 }
 
 /**
@@ -102,9 +107,9 @@ Game.prototype.start = function(callback) {
 
 	var game = this;
 	game.newRound(callback);
-	var gameMoves = setInterval(function() {
-		game.newRound(callback);
-	}, this.moveTime*1000);
+	// var gameMoves = setInterval(function() {
+	// 	game.newRound(callback);
+	// }, this.moveTime*1000);
 };
 
 /**
@@ -192,18 +197,23 @@ Game.prototype.saveToHistory = function(userID, moves, moveCurrent) {
  */
 Game.prototype.makeMove = function(userID, data, callback) {
 	var isCorrectMove = true;
-	console.log(data['moveCurrent'] + " " + this.moveCurrent);
-	if((Math.round(new Date().getTime() / 1000) - this.moveTime > this.moveStart) || parseInt(data['moveCurrent']) !== this.moveCurrent ) {
-		isCorrectMove = false;
-	};
-	if(this.findUserMoveCount(userID)+1 != this.moveCurrent ) {
-		isCorrectMove = false;
+	var isEnd = false;
+	if(this.maze.getNeighbourCells(data.moveInfo.y, data.moveInfo.x).right == -1) {
+		isEnd = true;
 	}
-	if(isCorrectMove) {
-		this.saveToHistory(userID, data, this.moveCurrent);
-	}
+	// console.log(data['moveCurrent'] + " " + this.moveCurrent);
+	// if((Math.round(new Date().getTime() / 1000) - this.moveTime > this.moveStart) || parseInt(data['moveCurrent']) !== this.moveCurrent ) {
+	// 	isCorrectMove = false;
+	// };
+	// if(this.findUserMoveCount(userID)+1 != this.moveCurrent ) {
+	// 	isCorrectMove = false;
+	// }
+	// if(isCorrectMove) {
+	this.saveToHistory(userID, data, this.findUserMoveCount(userID)+1);
+	// }	
 	// console.log(this.maze.getNeighbourCells(data.moveInfo.y, data.moveInfo.x));
-	callback(this.players, isCorrectMove, this.maze.getNeighbourCells(data.moveInfo.y, data.moveInfo.x));
+	console.log(this.maze.getNeighbourCells(data.moveInfo.y, data.moveInfo.x));
+	callback(this.players, isCorrectMove, this.maze.getNeighbourCells(data.moveInfo.y, data.moveInfo.x), isEnd);
 };
 
 module.exports = Game;

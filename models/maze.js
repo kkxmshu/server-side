@@ -16,6 +16,10 @@ var VISITED = 16;
 var Maze = function(){
 	// Cells of the maze.
 	this.maze = [];
+	this.bottom = BOTTOM;
+	this.right = RIGHT;
+	this.top = TOP;
+	this.left = LEFT;
 }	
 
 /**

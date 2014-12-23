@@ -37,7 +37,7 @@ function fw_update()
 	
 	if (delta > 1.0) delta = 1.0;
 	
-	updateScene(delta);
+//	updateScene(delta);
 	renderScene(delta);
 }
 

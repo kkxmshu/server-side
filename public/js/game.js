@@ -177,8 +177,8 @@ var player = {
 	draw: function() {	},
 	changeCoords: function(direction) {
 		console.log(maze.ways);
+	},
 	update: function() {},
-	draw: function() {},
 
 	/**
 	 * One step in the direction of
@@ -187,28 +187,30 @@ var player = {
 	 */
 	goto: function(direction) {
 		switch(direction) {
-
 			case UP:
-				if(maze.ways.top != 0) {
+				if((maze.ways.top & BOTTOM) == 0) {
 					this.coords.y -= 1;
 					return true;
 				}
 				break;
 			case DOWN:
-				if(maze.ways.bottom != 0) {
+				if((maze.ways.bottom & TOP) == 0) {
 					this.coords.y += 1;
 					return true;
 				}
 				break;
 			case RIGHT:
-				if(maze.ways.right != 0) {
-					// alert(right);
+				if(maze.ways.right == -1) {
+					this.coords.x = -1;
+					this.coords.y = -1;
+				}
+				if((maze.ways.right & LEFT) == 0 ) {
 					this.coords.x += 1;
 					return true;
 				}
 				break;
 			case LEFT:
-				if(maze.ways.left != 0) {
+				if((maze.ways.left & RIGHT) == 0) {
 					this.coords.x -= 1;
 					return true;
 				}
@@ -256,17 +258,18 @@ $(document).ready(function() {
 		if($('.userData').is(':visible')) {
 			var res = false;
 			if(e.which == 87) { // w
-				res = player.changeCoords(UP);
+				res = player.goto(UP);
 			}
 			if(e.which == 83) { // s
-				res = player.changeCoords(DOWN);
+				res = player.goto(DOWN);
 			}
 			if(e.which == 65) { // a
-				res = player.changeCoords(LEFT);
+				res = player.goto(LEFT);
 			}
 			if(e.which == 68) { // d
-				res = player.changeCoords(RIGHT);
+				res = player.goto(RIGHT);
 			}
+
 			if(res) {
 				$('.userData').find('#x').val(player.coords.x);
 				$('.userData').find('#y').val(player.coords.y);
@@ -276,9 +279,23 @@ $(document).ready(function() {
 	});
 
 	socket.on('someUserDoMove', function (data) {
-		console.log(data);
-		if(data['isWinner']) {
-			alert('Никого не осталось в комнате. Вы победили.');
+		if(data['isWinner'] != undefined && data['winnerID'] == data['userId']) {
+			t = JSON.parse(data.cells);
+
+			maze.ways.left = t.left;
+			maze.ways.right = t.right;
+			maze.ways.top = t.top;
+			maze.ways.bottom = t.bottom;
+			renderScene(42);
+			maze.draw();
+
+			alert('Вы победили.');
+
+			document.location.reload();
+		} else if(data['isWinner'] != undefined && data['winnerID'] != data['userId']) {
+			alert('Кто-то победил');
+
+			document.location.reload();
 		} else if((data['userId'] == data['moveInfo']['userID']) && data['isCorrect']) {
 			t = JSON.parse(data.cells);
 
@@ -286,6 +303,7 @@ $(document).ready(function() {
 			maze.ways.right = t.right;
 			maze.ways.top = t.top;
 			maze.ways.bottom = t.bottom;
+			renderScene(42);
 			maze.draw();
 
 			console.log('Вы походили на [' + data['moveInfo']['x'] + ';' + data['moveInfo']['y'] + ']');
@@ -303,19 +321,23 @@ $(document).ready(function() {
 	});
 
 	$(document).on('submit', '.js-userData', function (){
-		$('.userData').hide();
+		// $('.userData').hide();
 
 		var form = $(this).serializeArray();
 		var dataObj = {};
 		$(form).each(function(i, field){
 			dataObj[field.name] = field.value;
 		});
+
+		console.log("MAKE MOVE");
+		console.log(dataObj);
+
 		socket.emit('makeMove', dataObj);
 		return false;
 	});
 
 	
-	moveTimeAll = 0;
+	// moveTimeAll = 0;
 
 	socket.on('startGame', function (data) {
 		$('.info').hide();
@@ -329,27 +351,25 @@ $(document).ready(function() {
 			$('.js-userData').submit();
 		}
 
-		if(data.moveTime != undefined) {
-			moveTimeAll = data.moveTime;
-			
-		}
+		// if(data.moveTime != undefined) {
+		// 	moveTimeAll = data.moveTime;
+		// }
 
-		moveTime = moveTimeAll-1;
-		clearInterval(timer);
-		timer = setInterval(function(){
-			$('.timer').html(moveTime--);
-			if(moveTime < 0) {
-				$('.js-userData').submit();
-				clearInterval(timer);
-			}
-		}, 1000);
+		// moveTime = moveTimeAll-1;
+		// clearInterval(timer);
+		// timer = setInterval(function(){
+		// 	$('.timer').html(moveTime--);
+		// 	if(moveTime < 0) {
+		// 		$('.js-userData').submit();
+		// 		clearInterval(timer);
+		// 	}
+		// }, 1000);
 		
 		makeMove(data);		
 	});
 });
 
 function makeMove(data) {
-	console.log("move");
 	$('.userData').find('#roomId').val(data['roomId']);
 	$('.userData').show();
 }
