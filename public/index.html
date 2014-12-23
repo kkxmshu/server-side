@@ -2,6 +2,9 @@
 <html>
 	<head>
 		<title>Test</title>
+		<script src="/socket.io/socket.io.js"></script>
+		<script src="/test/jquery-1.11.0.min.js"></script>
+
 		<script src="js/maze.js"></script>
 		<script src="js/canvas.js"></script>
 		<script src="js/game.js"></script>
@@ -21,7 +24,26 @@
 	</head>
 	<body onload="init(5)">
 	<center><h1>Test maze</h1></center>
-		<canvas id="maze" width="600" height="480"></canvas>
-		
+	<canvas id="maze" width="600" height="480" class="game" style="display: none;"></canvas>
+
+	<div class="info">
+		<div class="statBlock"></div>
+		<div class="listOfGames">
+			<span></span>
+			<button class="listOfGames-create" data-players="2">Создать игру</button>
+		</div>
+	</div>
+
+	<div class="timer" style="font-size: 100px; opacity: 0.4; color: #fff; position: absolute; left: 5px; top: 5px;"></div>
+
+	<form class="userData js-userData" style="position: relative; left: -1000px;">
+		<span class="userInfo"></span>
+		<input placeholder="x" value="0" name="x" id="x" type="text">
+		<input placeholder="y" value="0" name="y" id="y" type="text">
+		<input type="hidden" name="roomId" id="roomId">
+		<input type="hidden" value="1" name="moveCurrent" id="moveCurrent"><br>
+		<button>Send</button>
+	</form>
+
 	</body>
 </html>

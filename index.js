@@ -71,7 +71,7 @@ io.on('connection', function (socket) {
 			},
 		};
 
-		game['game'].makeMove(userid, moveInfo, function(players, isCorrectMove) {
+		game['game'].makeMove(userid, moveInfo, function(players, isCorrectMove, cells) {
 			if(!isCorrectMove) {
 				moveInfo['isCorrect'] = false;
 				MazeGame.exitFromGame(userid);
@@ -79,16 +79,22 @@ io.on('connection', function (socket) {
 					id: 0,
 					text: "Время, отведённое на ход вышло"
 				});
-			};
-			if(players.length == 1) {
-				moveInfo['isWinner'] = true;
-				io.sockets.connected[players[0]].emit('someUserDoMove', moveInfo);
 			} else {
-				for(var i = 0; i < players.length; i++) {
-					moveInfo['userid'] = players[i];
-					io.sockets.connected[players[i]].emit('someUserDoMove', moveInfo);
+
+				moveInfo['cells'] = JSON.stringify(cells);
+				console.log(players.length);
+				if(players.length == 1) {
+					moveInfo['isWinner'] = true;
+					moveInfo['userId'] = userid;
+					io.sockets.connected[players[0]].emit('someUserDoMove', moveInfo);
+				} else {
+					for(var i = 0; i < players.length; i++) {
+						moveInfo['userId'] = players[i];
+						io.sockets.connected[players[i]].emit('someUserDoMove', moveInfo);
+					}
 				}
 			}
+			
 			
 		});
 	});

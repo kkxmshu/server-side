@@ -111,35 +111,168 @@ function drawCell(sx, sy, cell) {
 var player = {
 	direction: DOWN,
 	scale: 10,
+	coords: {x: 0, y: 0},
 	update: function() {	},
 	draw: function() {	},
-	goto: function(direction) {
+	changeCoords: function(direction) {
+		console.log(maze.ways);
 		switch(direction) {
+
 			case UP:
-				if(ways.top != 0) {
-					toServer(direction);
+				if(maze.ways.top != 0) {
+					this.coords.y -= 1;
+					return true;
 				}
 				break;
 			case DOWN:
-				if(ways.bottom != 0) {
-					toServer(direction);
+				if(maze.ways.bottom != 0) {
+					this.coords.y += 1;
+					return true;
 				}
 				break;
 			case RIGHT:
-				if(ways.right != 0) {
-					toServer(direction);
+				if(maze.ways.right != 0) {
+					// alert(right);
+					this.coords.x += 1;
+					return true;
 				}
 				break;
 			case LEFT:
-				if(ways.left != 0) {
-					toServer(direction);
+				if(maze.ways.left != 0) {
+					this.coords.x -= 1;
+					return true;
 				}
 				break;
-		}
+		};
+		return false;
 	}
 }
 
-function toServer(direction) {
+var start = false;
+var timer = 0;
 
+
+$(document).ready(function() {
+	var socket = io();
+
+	socket.on('stats', function (data) {
+		$('.statBlock').html(data.join('<br>'));
+	});
+
+	socket.on('listOfGames', function (data) {
+		$(".listOfGames span").empty();
+		for(var i = 0; i<data.length; i++) {
+			$(".listOfGames span").append("Игра на " + data[i]['playersMax'] + " игрока (уже " + data[i]['playersNow'] + " из " + data[i]['playersMax'] + ") <a href='' class='js-connect' data-id='" + data[i]['roomId'] + "'>Подключиться</a><br>");
+		}
+	});
+
+	socket.on('errorText', function (data) {
+		alert(data['text']);
+	})
+
+	$('.listOfGames-create').on('click', function() {
+		var players = $(this).data('players');
+		socket.emit('createGame', { players: players });
+	});
+
+	$(document).keydown(function (e) {
+		if($('.userData').is(':visible')) {
+			var res = false;
+			if(e.which == 87) { // w
+				res = player.changeCoords(UP);
+			}
+			if(e.which == 83) { // s
+				res = player.changeCoords(DOWN);
+			}
+			if(e.which == 65) { // a
+				res = player.changeCoords(LEFT);
+			}
+			if(e.which == 68) { // d
+				res = player.changeCoords(RIGHT);
+			}
+			if(res) {
+				$('.userData').find('#x').val(player.coords.x);
+				$('.userData').find('#y').val(player.coords.y);
+				$('.js-userData').submit();
+			}
+		}
+	});
+
+	socket.on('someUserDoMove', function (data) {
+		console.log(data);
+		if(data['isWinner']) {
+			alert('Никого не осталось в комнате. Вы победили.');
+		} else if((data['userId'] == data['moveInfo']['userID']) && data['isCorrect']) {
+			t = JSON.parse(data.cells);
+
+			maze.ways.left = t.left;
+			maze.ways.right = t.right;
+			maze.ways.top = t.top;
+			maze.ways.bottom = t.bottom;
+			maze.draw();
+
+			console.log('Вы походили на [' + data['moveInfo']['x'] + ';' + data['moveInfo']['y'] + ']');
+		} else if(data['isCorrect']) {
+			console.log('Пользователь ' + data['moveInfo']['userID'] + ' походил на [' + data['moveInfo']['x'] + ';' + data['moveInfo']['y'] + ']');
+		} else {
+			console.log('Пользователь ' + data['moveInfo']['userID'] + ' не успел походить и его было выкинуто из комнаты');
+		}
+	});
+
+	$(document).on('click', '.js-connect', function (){
+		var roomId = $(this).data('id');
+		socket.emit('connectToGame', { roomId: roomId });
+		return false;
+	});
+
+	$(document).on('submit', '.js-userData', function (){
+		$('.userData').hide();
+
+		var form = $(this).serializeArray();
+		var dataObj = {};
+		$(form).each(function(i, field){
+			dataObj[field.name] = field.value;
+		});
+		socket.emit('makeMove', dataObj);
+		return false;
+	});
+
+	
+	moveTimeAll = 0;
+
+	socket.on('startGame', function (data) {
+		$('.info').hide();
+		$('.game').show();
+
+		$('.userData').find('#roomId').val(data['roomId']);
+		$('.userData').find('#moveCurrent').val(data['moveCurrent']);
+
+		if(!start) {
+			start = true;
+			$('.js-userData').submit();
+		}
+
+		if(data.moveTime != undefined) {
+			moveTimeAll = data.moveTime;
+			
+		}
+
+		moveTime = moveTimeAll-1;
+		clearInterval(timer);
+		timer = setInterval(function(){
+			$('.timer').html(moveTime--);
+			if(moveTime < 0) {
+				$('.js-userData').submit();
+				clearInterval(timer);
+			}
+		}, 1000);
+		
+		makeMove(data);		
+	});
+});
+
+function makeMove(data) {
+	console.log("move");
+	$('.userData').find('#roomId').val(data['roomId']);
+	$('.userData').show();
 }
-

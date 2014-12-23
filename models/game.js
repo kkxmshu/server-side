@@ -1,3 +1,5 @@
+var Maze = require('./maze');
+
 var Game = function(player, playersMax) {
 	// Maximum of playes
 	this.playersMax = playersMax;
@@ -9,7 +11,7 @@ var Game = function(player, playersMax) {
 	this.started = false;
 
 	// Time (in sec) for one round
-	this.moveTime = 10;
+	this.moveTime = 3;
 
 	// Timeshtamp of start current round
 	this.moveStart = 0;
@@ -19,6 +21,9 @@ var Game = function(player, playersMax) {
 
 	// Objects with history of all moves
 	this.moveHistory = [];
+
+	this.maze = new Maze();
+	this.maze.generate(20, 20);
 }
 
 /**
@@ -108,12 +113,12 @@ Game.prototype.start = function(callback) {
  * @param callback(players, moveTime, moveStart, moveCurrent)
  */
 Game.prototype.newRound = function(callback) {
-	if(this.getCurrentPlayers() > 1) {
+	// if(this.getCurrentPlayers() >= 1) {
 		console.log("New round");
 		this.moveCurrent++;
 		this.moveStart = Math.round(new Date().getTime() / 1000);
 		callback(this.players, this.moveTime, this.moveStart, this.moveCurrent);
-	};
+	// };
 };
 
 /**
@@ -197,7 +202,8 @@ Game.prototype.makeMove = function(userID, data, callback) {
 	if(isCorrectMove) {
 		this.saveToHistory(userID, data, this.moveCurrent);
 	}
-	callback(this.players, isCorrectMove);
+	// console.log(this.maze.getNeighbourCells(data.moveInfo.y, data.moveInfo.x));
+	callback(this.players, isCorrectMove, this.maze.getNeighbourCells(data.moveInfo.y, data.moveInfo.x));
 };
 
 module.exports = Game;
