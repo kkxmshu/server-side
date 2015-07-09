@@ -249,7 +249,7 @@ $(document).ready(function() {
 	socket.on('listOfGames', function (data) {
 		$(".listOfGames span").empty();
 		for(var i = 0; i<data.length; i++) {
-			console.log(data[i]);
+			// console.log(data[i]);
 			var joinLink = (data[i]['creatorID'] != data[i]['userID'])?"<a href='' class='js-connect' data-id='" + data[i]['roomId'] + "'>Подключиться</a>":'';
 				if(data[i].playersList.indexOf(data[i]['userID']) > -1 && data[i]['creatorID'] != data[i]['userID'] ) {
 					joinLink = '';

@@ -216,7 +216,6 @@ Game.prototype.makeMove = function(userID, data, callback) {
 	this.saveToHistory(userID, data, this.findUserMoveCount(userID)+1);
 	// }	
 	// console.log(this.maze.getNeighbourCells(data.moveInfo.y, data.moveInfo.x));
-	console.log(this.maze.getNeighbourCells(data.moveInfo.y, data.moveInfo.x));
 	callback(this.players, isCorrectMove, this.maze.getNeighbourCells(data.moveInfo.y, data.moveInfo.x), isEnd);
 };
 

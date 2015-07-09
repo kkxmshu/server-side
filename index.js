@@ -101,14 +101,19 @@ io.on('connection', function (socket) {
 					moveInfo['userId'] = userid;
 					io.sockets.connected[players[0]].emit('someUserDoMove', moveInfo);
 				} else {
-					for(var i = 0; i < players.length; i++) {
-						moveInfo['userId'] = players[i];
-						io.sockets.connected[players[i]].emit('someUserDoMove', moveInfo);
-					}
-					for(var i = 0; i < players.length; i++) {
-						if(isEnd) {
-							MazeGame.exitFromGame(players[i]);
-						};
+					if(!moveInfo['isWinner'] && !isEnd) {
+						moveInfo['userId'] = userid;
+						io.sockets.connected[userid].emit('someUserDoMove', moveInfo);
+					} else {
+						for(var i = 0; i < players.length; i++) {
+							moveInfo['userId'] = players[i];
+							io.sockets.connected[players[i]].emit('someUserDoMove', moveInfo);
+						}
+						for(var i = 0; i < players.length; i++) {
+							if(isEnd) {
+								MazeGame.exitFromGame(players[i]);
+							};
+						}
 					}
 				}
 			}
@@ -122,6 +127,6 @@ io.on('connection', function (socket) {
 	});
 });
 
-server.listen(3000, function(){
+server.listen(8080, function(){
   console.log('Server running on  *:3000');
 });
